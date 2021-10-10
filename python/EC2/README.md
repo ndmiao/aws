@@ -1,0 +1,1 @@
+将aws下载的凭证文件放置在Credentials文件夹下，运行即可根据账号在xlsx中生成不同sheet进行EC2资源信息的展示，可根据[python boto3 describe EC2返回的json](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances)进行自定义资源信息。
