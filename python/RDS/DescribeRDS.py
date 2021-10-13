@@ -1,66 +1,59 @@
 # -*- coding: utf-8 -*-
 """
-@Time ： 2021/10/9 10:07
+@Time ： 2021/10/13 11:46
 @Auth ： ndmiao
 @Blog ：www.ndmiao.cn
-@Url ：https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html#EC2.Client.describe_instances
 """
 
 import openpyxl
 import boto3
-from datetime import timedelta
 from ReadCredentials import ReadCredentials
 from openpyxl.styles import Alignment
 
 
-class GetEC2Information:
+class GetRDSInformation:
     def __init__(self):
         self.region = 'cn-north-1'
 
-    def ec2_client(self, id, key, region):
+    def rds_client(self, id, key, region):
         """
         :param id: aws_access_key_id
         :param key: aws_secret_access_key
         :param region: region_name
-        :return: 建立一个与 ec2 的连接
+        :return: 建立一个与 rds 的连接
         """
-        ec2 = boto3.client(
-            'ec2',
+        rds = boto3.client(
+            'rds',
             aws_access_key_id = id,
             aws_secret_access_key = key,
             region_name = region
         )
-        return ec2
+        return rds
 
-    def ec2_information(self):
+    def rds_information(self):
         """
-        :return: 获取所有账号下ec2资源信息，保存到xlsx里面
+        :return: 获取所有账号下rds资源信息，保存到xlsx里面
         """
         credentials = ReadCredentials().get_credential()
         wb = WriteToXlsx().active_xlsx()
         id_num = 0
         for credential in credentials:
-            ec2 = self.ec2_client(credential['Access key ID'], credential['Secret access key'], self.region)
-            instances = ec2.describe_instances()
+            rds = self.rds_client(credential['Access key ID'], credential['Secret access key'], self.region)
+            rds_instances = rds.describe_db_instances()
             instance_info = []
             owner_id = ReadCredentials().aws_id()[id_num]
             id_num += 1
-            for item in instances['Reservations']:
-                for instance in item['Instances']:
-                    InstanceId = instance['InstanceId']
-                    InstanceType = instance['InstanceType']
-                    try:
-                        PrivateIpAddress = instance['PrivateIpAddress']
-                    except:
-                        PrivateIpAddress = 'None'
-                    CreatedTime = (instance['BlockDeviceMappings'][0]['Ebs']['AttachTime']+timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
-                    State = instance['State']['Name']
-                    Tags = instance['Tags']
-                    Name = self.get_tag(Tags, 'Name')
-                    Project = self.get_tag(Tags, 'project')
-                    Schedule = self.get_tag(Tags, 'Schedule')
-                    ScheduleMessage = self.get_tag(Tags, 'ScheduleMessage')
-                    instance_info.append([Name, InstanceId, InstanceType, PrivateIpAddress, Project, CreatedTime, State, Schedule, ScheduleMessage])
+            for item in rds_instances['DBInstances']:
+                Name = item['DBInstanceIdentifier']
+                InstanceType = item['DBInstanceClass']
+                Engine = item['Engine']
+                EngineVersion = item['EngineVersion']
+                State = item['DBInstanceStatus']
+                Tags = item['TagList']
+                Project = self.get_tag(Tags, 'project')
+                Schedule = self.get_tag(Tags, 'Schedule')
+                ScheduleMessage = self.get_tag(Tags, 'ScheduleMessage')
+                instance_info.append([Name, InstanceType, Engine, EngineVersion, State, Project, Schedule, ScheduleMessage])
             WriteToXlsx().send_data(wb, owner_id, instance_info)
         WriteToXlsx().save(wb)
 
@@ -74,8 +67,8 @@ class GetEC2Information:
 
 class WriteToXlsx:
     def __init__(self):
-        self.headers = ['Name', 'InstanceId', 'InstanceType', 'PrivateIpAddress', 'Project', 'CreatedTime', 'State', 'Schedule', 'ScheduleMessage']
-        self.xlsx_name = 'D:/BaiduNetdiskWorkspace/代码/python/aws/EC2/ResoursesList.xlsx'
+        self.headers = ['Name', 'InstanceType', 'Engine', 'EngineVersion', 'State', 'Project', 'Schedule', 'ScheduleMessage']
+        self.xlsx_name = 'D:/BaiduNetdiskWorkspace/代码/python/aws/RDS/ResoursesList.xlsx'
 
     def active_xlsx(self):
         """
@@ -120,4 +113,5 @@ if __name__ == "__main__":
     # WriteToXlsx().send_data(wb, 'hhhh', [[1,2,3],[4,5,6]])
     # WriteToXlsx().send_data(wb, 'hhhh3', [[1, 2, 3], [4, 5, 6 ]])
     # WriteToXlsx().save(wb)
-    GetEC2Information().ec2_information()
+    GetRDSInformation().rds_information()
+

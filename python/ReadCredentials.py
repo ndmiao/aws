@@ -19,6 +19,15 @@ class ReadCredentials:
         """
         return os.listdir(self.file_dir)
 
+    def aws_id(self):
+        """
+        :return: 返回aws_id
+        """
+        id_list = []
+        for id in os.listdir(self.file_dir):
+            id_list.append(id[:12])
+        return id_list
+
     def read_csv(self, filename):
         """
         :param filename: Credential 的文件名
@@ -44,4 +53,4 @@ class ReadCredentials:
 
 
 if __name__ == "__main__":
-    print(ReadCredentials().get_credential())
+    print(ReadCredentials().aws_id())
