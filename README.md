@@ -3,6 +3,7 @@
 ## Python
 
 - [EC2资源遍历](python/EC2)
+- [RDS资源遍历](python/RDS)
 
 ---
 > GitHub [@ndmiao](https://github.com/ndmiao) &nbsp;&middot;&nbsp;
